@@ -1,11 +1,28 @@
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using SolanaWallet.Client;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Blazored.Modal;
+using Solnet.Rpc;
+using SolanaWallet.Client.Services;
 
-var builder = WebAssemblyHostBuilder.CreateDefault(args);
-builder.RootComponents.Add<App>("#app");
-builder.RootComponents.Add<HeadOutlet>("head::after");
+namespace SolanaWallet.Client
+{
+    public class Program
+    {
+        public static async Task Main(string[] args)
+        {
+            var builder = WebAssemblyHostBuilder.CreateDefault(args);
+            builder.RootComponents.Add<App>("#app");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddBlazoredModal();
 
-await builder.Build().RunAsync();
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddSingleton<IWalletService, WalletService>();
+            builder.Services.AddSingleton(s => new AppState());
+
+            await builder.Build().RunAsync();
+        }
+    }
+}
